@@ -1,0 +1,10 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/FishingLog.Api/FishingLog.Api.csproj" />
+    <Project Path="src/FishingLog.Application/FishingLog.Application.csproj" />
+    <Project Path="src/FishingLog.Contracts/FishingLog.Contracts.csproj" />
+    <Project Path="src/FishingLog.Domain/FishingLog.Domain.csproj" />
+    <Project Path="src/FishingLog.Infrastructure/FishingLog.Infrastructure.csproj" />
+    <Project Path="src/FishingLog.Mobile/FishingLog.Mobile.csproj" />
+  </Folder>
+</Solution>

@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using FishingLog.Mobile.Configuration;
+using Microsoft.Extensions.Logging;
 
 namespace FishingLog.Mobile;
 
@@ -18,6 +19,13 @@ public static class MauiProgram
 #if DEBUG
 		builder.Logging.AddDebug();
 #endif
+
+		// Load and register app settings
+		var appSettings = AppSettings.Load();
+		builder.Services.AddSingleton(appSettings);
+		builder.Services.AddSingleton(appSettings.Api);
+		builder.Services.AddSingleton(appSettings.Sync);
+		builder.Services.AddSingleton(appSettings.Database);
 
 		return builder.Build();
 	}

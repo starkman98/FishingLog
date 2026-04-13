@@ -29,13 +29,13 @@
 - [x] .gitignore properly configured
 
 ### Core Infrastructure (API)
-- [ ] **Domain**: `FishingTrip` entity with properties (Id, UserId, StartTime, EndTime, Location, Notes, etc.)
-- [ ] **Infrastructure**: DbContext setup for PostgreSQL
-- [ ] **Infrastructure**: Initial EF Core migration
-- [ ] **API**: Program.cs with DI container configuration
-- [ ] **API**: CORS configuration (locked down)
-- [ ] **API**: Health check endpoint (`/health`)
-- [ ] **API**: Global exception handling middleware
+- [x] **Domain**: `FishingTrip` entity with properties (Id, UserId, StartTime, EndTime, Location, Notes, etc.)
+- [x] **Infrastructure**: DbContext setup for PostgreSQL
+- [x] **Infrastructure**: Initial EF Core migration
+- [x] **API**: Program.cs with DI container configuration
+- [x] **API**: CORS configuration (locked down)
+- [x] **API**: Health check endpoint (`/health`)
+- [x] **API**: Global exception handling middleware
 
 ### Core Infrastructure (Mobile)
 - [ ] **Mobile**: SQLite database initialization

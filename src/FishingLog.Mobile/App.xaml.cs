@@ -1,16 +1,29 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using FishingLog.Mobile.Data;
 
 namespace FishingLog.Mobile;
 
 public partial class App : Application
 {
-	public App()
+	private readonly ILocalDatabase _localDatabase;
+	public App(ILocalDatabase localDatabase)
 	{
 		InitializeComponent();
+		_localDatabase = localDatabase;
 	}
 
-	protected override Window CreateWindow(IActivationState? activationState)
-	{
-		return new Window(new AppShell());
-	}
+    /// <summary>
+    /// Creates the initial app window with AppShell as the root page.
+    /// Preferred over setting MainPage directly in MAUI.
+    /// </summary>
+    protected override Window CreateWindow(IActivationState? activationState)
+        => new Window(new AppShell());
+
+    /// <summary>
+    /// Called when the app starts. Initialises the local SQLite database.
+    /// </summary>
+    protected override async void OnStart()
+    {
+        base.OnStart();
+        await _localDatabase.InitializeAsync();
+    }
 }

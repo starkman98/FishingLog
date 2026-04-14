@@ -1,4 +1,8 @@
+using FishingLog.Application.Interfaces;
+using FishingLog.Application.Services;
+using FishingLog.Domain.Interfaces;
 using FishingLog.Infrastructure.Persistence;
+using FishingLog.Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -13,6 +17,12 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddDbContext<FishingLogDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")
     ?? throw new InvalidOperationException("Missing connection string.")));
+
+// --- Repositories ---
+builder.Services.AddScoped<IFishingTripRepository, FishingTripRepository>();
+
+// --- Services ---
+builder.Services.AddScoped<IFishingTripService, FishingTripService>();
 
 var allowedOrigins = builder.Configuration
     .GetSection("Cors:AllowedOrigins")
@@ -52,7 +62,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-app.UseCors("AllowConfiguredOrigins");
+app.UseCors("AllowedConfiguredOrigins");
 
 app.MapHealthChecks("/health");
 

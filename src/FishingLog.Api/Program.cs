@@ -1,3 +1,4 @@
+using FishingLog.Api.Endpoints;
 using FishingLog.Application.Interfaces;
 using FishingLog.Application.Services;
 using FishingLog.Domain.Interfaces;
@@ -61,10 +62,10 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
 app.UseCors("AllowedConfiguredOrigins");
 
 app.MapHealthChecks("/health");
+app.MapFishingTripEndpoints();
 
 app.Run();
 

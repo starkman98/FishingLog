@@ -130,19 +130,19 @@
 - [x] Register in MauiProgram.cs
 
 ### 1.10 Mobile: ViewModel & UI
-- [ ] Create `FishingTripsViewModel`
+- [x] Create `FishingTripsViewModel`
   - ObservableCollection<FishingTripLocalEntity> Trips
   - LoadTripsCommand, AddTripCommand, EditTripCommand, DeleteTripCommand, SyncCommand
   - Inject IFishingTripLocalRepository and IFishingTripSyncService
-- [ ] Create `FishingTripsPage.xaml` with list view
+- [x] Create `FishingTripsPage.xaml` with list view
   - Display all trips with start time, location, notes
   - Pull-to-refresh triggers sync
   - Tap to edit
-- [ ] Create `AddEditFishingTripPage.xaml` with form
+- [x] Create `AddEditFishingTripPage.xaml` with form
   - Date/time pickers, location entry, notes field
   - Save button (saves locally, sets IsDirty = true)
-- [ ] Register pages and ViewModels in MauiProgram.cs
-- [ ] Add navigation between pages
+- [x] Register pages and ViewModels in MauiProgram.cs
+- [x] Add navigation between pages
 
 ### 1.11 Testing & Validation
 - [ ] Unit tests for FishingTripService (Application layer)

@@ -62,6 +62,14 @@ public static class FishingTripEndpoints
         if (request.EndTime.HasValue && request.EndTime < request.StartTime)
             return Results.BadRequest(new { error = "EndTime must be after StartTime." });
 
+        request = request with
+        {
+            StartTime = DateTime.SpecifyKind(request.StartTime, DateTimeKind.Utc),
+            EndTime = request.EndTime.HasValue
+                ? DateTime.SpecifyKind(request.EndTime.Value, DateTimeKind.Utc)
+                : null
+        };
+
         var created = await service.CreateAsync(request, ct);
         return Results.Created($"/api/fishing-trips/{created.Id}", created);
     }
@@ -78,6 +86,14 @@ public static class FishingTripEndpoints
 
         if (request.EndTime.HasValue && request.EndTime < request.StartTime)
             return Results.BadRequest(new { error = "EndTime must be after StartTime." });
+
+        request = request with
+        {
+            StartTime = DateTime.SpecifyKind(request.StartTime, DateTimeKind.Utc),
+            EndTime = request.EndTime.HasValue
+                ? DateTime.SpecifyKind(request.EndTime.Value, DateTimeKind.Utc)
+                : null
+        };
 
         var updated = await service.UpdateAsync(id, request, ct);
         return updated is null ? Results.NotFound() : Results.Ok(updated);

@@ -1,7 +1,9 @@
 ﻿using FishingLog.Mobile.Configuration;
 using FishingLog.Mobile.Data;
 using FishingLog.Mobile.Data.Repositories;
+using FishingLog.Mobile.Pages;
 using FishingLog.Mobile.Services;
+using FishingLog.Mobile.ViewModels;
 using Microsoft.Extensions.Logging;
 
 namespace FishingLog.Mobile;
@@ -41,14 +43,23 @@ public static class MauiProgram
 
         // --- API client ---
         // Typed HttpClient: BaseAddress and Timeout come from appsettings
-        builder.Services.AddHttpClient<IFishingTripApiClient, FishingTripApiClient>(client =>
-        {
-            client.BaseAddress = new Uri(appSettings.Api.BaseUrl.TrimEnd('/') + "/");
-            client.Timeout = TimeSpan.FromSeconds(appSettings.Api.Timeout);
-        });
+		builder.Services.AddHttpClient<IFishingTripApiClient, FishingTripApiClient>(client =>
+		{
+			var baseUrl = PlatformApiUrl.Resolve(appSettings.Api.BaseUrl);
+			client.BaseAddress = new Uri(baseUrl.TrimEnd('/') + "/");
+			client.Timeout = TimeSpan.FromSeconds(appSettings.Api.Timeout);
+		});
 
         // --- Sync service ---
         builder.Services.AddTransient<IFishingTripSyncService, FishingTripSyncService>();
+
+        // --- ViewModels ---
+        builder.Services.AddTransient<FishingTripsViewModel>();
+        builder.Services.AddTransient<AddEditFishingTripViewModel>();
+
+        // --- Pages ---
+        builder.Services.AddTransient<FishingTripsPage>();
+        builder.Services.AddTransient<AddEditFishingTripPage>();
 
 
         return builder.Build();

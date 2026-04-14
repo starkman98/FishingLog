@@ -2,6 +2,7 @@
 using FishingLog.Mobile.Data;
 using FishingLog.Mobile.Data.Entities;
 using FishingLog.Mobile.Data.Repositories;
+using Microsoft.Extensions.Logging;
 
 namespace FishingLog.Mobile.Services;
 
@@ -18,6 +19,7 @@ public class FishingTripSyncService : IFishingTripSyncService
     private readonly IFishingTripLocalRepository _localRepository;
     private readonly ISyncMetadataRepository _syncMetadata;
     private readonly IFishingTripApiClient _apiClient;
+    private readonly ILogger<FishingTripSyncService> _logger;
 
     /// <summary>
     /// Initializes a new instance of <see cref="FishingTripSyncService"/>.
@@ -25,18 +27,23 @@ public class FishingTripSyncService : IFishingTripSyncService
     public FishingTripSyncService(
         IFishingTripLocalRepository localRepository,
         ISyncMetadataRepository syncMetadata,
-        IFishingTripApiClient apiClient)
+        IFishingTripApiClient apiClient,
+        ILogger<FishingTripSyncService> logger)
     {
         _localRepository = localRepository;
         _syncMetadata = syncMetadata;
         _apiClient = apiClient;
+        _logger = logger;
     }
 
     /// <inheritdoc/>
     public async Task SyncAsync(CancellationToken ct = default)
     {
+        _logger.LogInformation("[Sync] Starting sync. BaseAddress={BaseAddress}",
+            _apiClient.GetType().Name);
         await UploadDirtyTripsAsync(ct);
         await DownloadRemoteChangesAsync(ct);
+        _logger.LogInformation("[Sync] Sync complete.");
     }
 
     // -------------------------------------------------------------------------
@@ -46,6 +53,7 @@ public class FishingTripSyncService : IFishingTripSyncService
     private async Task UploadDirtyTripsAsync(CancellationToken ct)
     {
         var dirtyTrips = await _localRepository.GetDirtyAsync(ct);
+        _logger.LogInformation("[Sync] Upload: {Count} dirty trip(s) found.", dirtyTrips.Count);
 
         foreach (var trip in dirtyTrips)
         {
@@ -55,15 +63,29 @@ public class FishingTripSyncService : IFishingTripSyncService
             try
             {
                 if (trip.ServerId is null)
+                {
+                    _logger.LogInformation("[Sync] Uploading new trip LocalId={Id} Name={Name}", trip.Id, trip.Name);
                     await UploadNewTripAsync(trip, ct);
+                    _logger.LogInformation("[Sync] Upload succeeded for LocalId={Id}", trip.Id);
+                }
                 else if (trip.IsDeleted)
+                {
+                    _logger.LogInformation("[Sync] Deleting trip ServerId={ServerId}", trip.ServerId);
                     await DeleteTripOnServerAsync(trip, ct);
+                }
                 else
+                {
+                    _logger.LogInformation("[Sync] Updating trip ServerId={ServerId}", trip.ServerId);
                     await UpdateTripOnServerAsync(trip, ct);
+                }
             }
-            catch (HttpRequestException)
+            catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException)
             {
-                // Network error — leave dirty, will retry on the next sync cycle
+                _logger.LogWarning(ex, "[Sync] Network error uploading LocalId={Id} — will retry next sync.", trip.Id);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "[Sync] Unexpected error uploading LocalId={Id}", trip.Id);
             }
         }
     }
@@ -106,10 +128,31 @@ public class FishingTripSyncService : IFishingTripSyncService
     {
         var lastSync = await _syncMetadata.GetLastSyncAsync(SyncEntityType.FishingTrip, ct);
 
-        // If never synced before, use DateTime.MinValue to get everything
-        var syncFrom = lastSync ?? DateTime.MinValue;
+        // Use a safe minimum date rather than DateTime.MinValue — some serialisers/APIs reject year 0001
+        var syncFrom = lastSync ?? new DateTime(2000, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+        _logger.LogInformation("[Sync] Download: fetching trips modified since {SyncFrom}", syncFrom);
 
-        var remoteTrips = await _apiClient.GetModifiedSinceAsync(syncFrom, ct);
+        List<FishingTripResponse> remoteTrips;
+        try
+        {
+            remoteTrips = await _apiClient.GetModifiedSinceAsync(syncFrom, ct);
+            _logger.LogInformation("[Sync] Download: received {Count} remote trip(s).", remoteTrips.Count);
+        }
+        catch (HttpRequestException ex)
+        {
+            _logger.LogWarning(ex, "[Sync] Network error during download.");
+            return;
+        }
+        catch (TaskCanceledException ex)
+        {
+            _logger.LogWarning(ex, "[Sync] Timeout during download.");
+            return;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "[Sync] Unexpected error during download.");
+            return;
+        }
 
         foreach (var remoteTrip in remoteTrips)
         {

@@ -31,6 +31,9 @@ public interface IFishingTripLocalRepository
     /// <summary>Soft-deletes a trip by setting IsDeleted = true and IsDirty = true.</summary>
     Task DeleteAsync(int id, CancellationToken ct = default);
 
+    /// <summary>Permanently deletes a trip from local database</summary>
+    Task PermanentlyDeleteAsync(int id, CancellationToken ct = default);
+
     /// <summary>
     /// Called by the sync service after a successful upload.
     /// Stamps the record with the server's GUID and clears the dirty flag.

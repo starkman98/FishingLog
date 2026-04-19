@@ -17,22 +17,23 @@ public partial class AddEditFishingTripViewModel : BaseViewModel
     private int _localId;
 
     // -------------------------------------------------------------------------
-    // Form fields
+    // Form Properties
     // -------------------------------------------------------------------------
 
-    [ObservableProperty] private string _name = string.Empty;
-    [ObservableProperty] private string? _locationName;
-    [ObservableProperty] private string? _note;
+    [ObservableProperty] public partial string Name { get; set; } = string.Empty;
+    [ObservableProperty] public partial string? LocationName { get; set; }
+    [ObservableProperty] public partial string? Note { get; set; }
 
     // DatePicker and TimePicker are separate controls in MAUI
-    [ObservableProperty] private DateTime _startDate = DateTime.Today;
-    [ObservableProperty] private TimeSpan _startTimeOfDay = DateTime.Now.TimeOfDay;
+    [ObservableProperty] public partial DateTime StartDate { get; set; } = DateTime.Today;
+    [ObservableProperty] public partial TimeSpan StartTimeOfDay { get; set; } = DateTime.Now.TimeOfDay;
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsEndDateVisible))]
-    private bool _hasEndDate;
+    public partial bool HasEndDate { get; set; }
 
-    [ObservableProperty] private DateTime _endDate = DateTime.Today;
+    [ObservableProperty] public partial DateTime EndDate { get; set; } = DateTime.Today;
+    [ObservableProperty] public partial TimeSpan EndTimeOfDay { get; set; } = DateTime.Now.TimeOfDay;
 
     /// <summary>Controls visibility of the end date picker.</summary>
     public bool IsEndDateVisible => HasEndDate;
@@ -80,19 +81,19 @@ public partial class AddEditFishingTripViewModel : BaseViewModel
             return;
         }
 
-        var startTime = StartDate.Date + StartTimeOfDay;
-        var endTime = HasEndDate ? (DateTime?)EndDate.Date : null;
+        var startTimeUtc = ToUtc(StartDate.Date, StartTimeOfDay);
+        var endTimeUtc = HasEndDate ? (DateTime?)ToUtc(EndDate, EndTimeOfDay) : null;
 
-        if (endTime.HasValue && endTime < startTime)
+        if (endTimeUtc.HasValue && endTimeUtc < startTimeUtc)
         {
             await Shell.Current.DisplayAlertAsync("Validation", "End date must be after start date.", "OK");
             return;
         }
 
         if (IsEditMode)
-            await UpdateExistingTripAsync(startTime, endTime);
+            await UpdateExistingTripAsync(startTimeUtc, endTimeUtc);
         else
-            await AddNewTripAsync(startTime, endTime);
+            await AddNewTripAsync(startTimeUtc, endTimeUtc);
 
         await Shell.Current.GoToAsync("..");
     }
@@ -115,10 +116,18 @@ public partial class AddEditFishingTripViewModel : BaseViewModel
         Name = trip.Name;
         LocationName = trip.LocationName;
         Note = trip.Note;
-        StartDate = trip.StartTime.Date;
-        StartTimeOfDay = trip.StartTime.TimeOfDay;
+
+        var localStart = trip.StartTime.ToLocalTime();
+        StartDate = localStart.Date;
+        StartTimeOfDay = localStart.TimeOfDay;
+
         HasEndDate = trip.EndTime.HasValue;
-        EndDate = trip.EndTime?.Date ?? DateTime.Today;
+        if (trip.EndTime.HasValue)
+        {
+            var localEnd = trip.EndTime.Value.ToLocalTime();
+            EndDate = localEnd.Date;
+            EndTimeOfDay = localEnd.TimeOfDay;
+        }
         Title = "Edit Trip";
     }
 
@@ -148,4 +157,7 @@ public partial class AddEditFishingTripViewModel : BaseViewModel
         trip.EndTime = endTime;
         await _repository.UpdateAsync(trip);
     }
+
+    private static DateTime ToUtc(DateTime localDate, TimeSpan localTime)
+        => DateTime.SpecifyKind(localDate.Date + localTime, DateTimeKind.Local).ToUniversalTime();
 }

@@ -38,6 +38,9 @@ public class FishingTripService : IFishingTripService
     /// <inheritdoc/>
     public async Task<List<FishingTripResponse>> GetModifiedSinceAsync(DateTime since, CancellationToken ct = default)
     {
+        if (since.Kind != DateTimeKind.Utc)
+            since = DateTime.SpecifyKind(since, DateTimeKind.Utc);
+
         var trips = await _repository.GetModifiedSinceAsync(since, ct);
         return trips.Select(MapToResponse).ToList();
     }

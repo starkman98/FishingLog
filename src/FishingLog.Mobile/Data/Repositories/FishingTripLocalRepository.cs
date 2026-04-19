@@ -1,4 +1,5 @@
-﻿using FishingLog.Mobile.Data.Entities;
+﻿using Android.Text.Style;
+using FishingLog.Mobile.Data.Entities;
 using SQLite;
 
 namespace FishingLog.Mobile.Data.Repositories;
@@ -33,9 +34,12 @@ public class FishingTripLocalRepository : IFishingTripLocalRepository
 
     /// <inheritdoc/>
     public Task<FishingTripLocalEntity?> GetByServerIdAsync(Guid serverId, CancellationToken ct = default)
-        => _db.Table<FishingTripLocalEntity?>()
-              .Where(x => x.ServerId == serverId.ToString())
-              .FirstOrDefaultAsync();
+    {
+        var serverIdAsString = serverId.ToString();
+        return _db.Table<FishingTripLocalEntity?>()
+            .Where(x => x.ServerId == serverIdAsString)
+            .FirstOrDefaultAsync();
+    }
 
     /// <inheritdoc/>
     public Task<List<FishingTripLocalEntity>> GetDirtyAsync(CancellationToken ct = default)
@@ -72,6 +76,10 @@ public class FishingTripLocalRepository : IFishingTripLocalRepository
         trip.LastModifiedUtc = DateTime.UtcNow;
         await _db.UpdateAsync(trip);
     }
+
+    /// <inheritdoc/>
+    public Task PermanentlyDeleteAsync(int id, CancellationToken ct = default)
+        => _db.DeleteAsync<FishingTripLocalEntity>(id);
 
     /// <inheritdoc/>
     public async Task MarkAsSyncedAsync(int id, Guid serverId, DateTime lastModifiedUtc, CancellationToken ct = default)

@@ -18,8 +18,21 @@ public partial class FishingTripsViewModel : BaseViewModel
     private readonly IFishingTripSyncService _syncService;
     private readonly ILogger<FishingTripsViewModel> _logger;
 
+    private readonly SemaphoreSlim _syncLock = new(1, 1);
+
     [ObservableProperty]
-    private ObservableCollection<FishingTripLocalEntity> _trips = [];
+    public partial ObservableCollection<FishingTripLocalEntity> Trips { get; set; } = [];
+
+    /// <summary>
+    /// Short status message shown below the toolbar (e.g. "Offline - trip saved locally.").
+    /// Empty string means no message is displayed.
+    /// </summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasStatusMessage))]
+    public partial string StatusMessage { get; set; } = string.Empty;
+
+    /// <summary>Controls the visibility of the status message bar.</summary>
+    public bool HasStatusMessage => !string.IsNullOrEmpty(StatusMessage);
 
     private bool _isRefreshing;
 
@@ -61,32 +74,69 @@ public partial class FishingTripsViewModel : BaseViewModel
         }
     }
 
-    /// <summary>Runs the sync service then reloads the list.</summary>
-    [RelayCommand]
-    private async Task SyncAsync()
+    /// <summary>
+    /// Resets the refresh spinner and runs auto-sync. Call from OnAppearing
+    /// so a spinner stuck from a previous background/foreground cycle is cleared.
+    /// </summary>
+    public async Task OnPageAppearingAsync()
     {
+        // Ensure spinner is never stuck when the page re-appears
+        MainThread.BeginInvokeOnMainThread(() => IsRefreshing = false);
+        await RunSyncAsync(showRefreshSpinner: false);
+    }
+
+    /// <summary>Runs the sync service then reloads the list. Used by pull-to-refresh.</summary>
+    [RelayCommand]
+    private Task SyncAsync() => RunSyncAsync(showRefreshSpinner: true);
+
+    /// <summary>Internal sync logic shared by auto-sync and pull-to-refresh.</summary>
+    private async Task RunSyncAsync(bool showRefreshSpinner)
+    {
+        if (!await _syncLock.WaitAsync(0))
+        {
+            _logger.LogInformation("[VM] SyncCommand skipped — sync already in progress.");
+            return;
+        }
+
         _logger.LogInformation("[VM] SyncCommand started.");
         try
         {
-            IsRefreshing = true;
+            if (showRefreshSpinner)
+                IsRefreshing = true;
+
+            var localTrips = await _repository.GetAllAsync();
+            Trips = new ObservableCollection<FishingTripLocalEntity>(localTrips);
+            
             await _syncService.SyncAsync();
-            var trips = await _repository.GetAllAsync();
-            Trips = new ObservableCollection<FishingTripLocalEntity>(trips);
+            
+            var syncedTrips = await _repository.GetAllAsync();
+            Trips = new ObservableCollection<FishingTripLocalEntity>(syncedTrips);
             _logger.LogInformation("[VM] SyncCommand finished. Trips loaded: {Count}", Trips.Count);
         }
         catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException or OperationCanceledException)
         {
             _logger.LogWarning(ex, "[VM] SyncCommand: offline/timeout — {Type}: {Message}", ex.GetType().Name, ex.Message);
+            _ = ShowStatusMessageAsync("Server Offline - trip saved locally, will sync when back online.");
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "[VM] SyncCommand: unexpected error — {Type}: {Message}", ex.GetType().Name, ex.Message);
+            _ = ShowStatusMessageAsync("Oops - something went wrong during sync.");
         }
         finally
         {
             IsRefreshing = false;
+            _syncLock.Release();
             _logger.LogInformation("[VM] SyncCommand finally. IsRefreshing reset to false.");
         }
+    }
+
+    /// <summary>Shows a status message then clears it after a short delay.</summary>
+    private async Task ShowStatusMessageAsync(string message, int displaySeconds = 4)
+    {
+        StatusMessage = message;
+        await Task.Delay(TimeSpan.FromSeconds(displaySeconds));
+        StatusMessage = string.Empty;
     }
 
     /// <summary>Navigates to the add trip page.</summary>

@@ -24,6 +24,6 @@ public partial class FishingTripsPage : ContentPage
     protected override void OnAppearing()
     {
         base.OnAppearing();
-        _viewModel.LoadTripsCommand.ExecuteAsync(null);
+        _ = _viewModel.OnPageAppearingAsync();
     }
 }

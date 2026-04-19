@@ -112,12 +112,13 @@ public class FishingTripSyncService : IFishingTripSyncService
     private async Task DeleteTripOnServerAsync(FishingTripLocalEntity trip, CancellationToken ct)
     {
         if (!Guid.TryParse(trip.ServerId, out var serverId))
+        {
+            await _localRepository.PermanentlyDeleteAsync(trip.Id, ct);
             return;
+        }
 
-        var deleted = await _apiClient.DeleteAsync(serverId, ct);
-
-        if (deleted)
-            await _localRepository.MarkAsSyncedAsync(trip.Id, serverId, trip.LastModifiedUtc, ct);
+            await _apiClient.DeleteAsync(serverId, ct);
+            await _localRepository.PermanentlyDeleteAsync(trip.Id, ct);
     }
 
     // -------------------------------------------------------------------------

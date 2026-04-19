@@ -1,5 +1,4 @@
-﻿using Android.Text.Style;
-using FishingLog.Mobile.Data.Entities;
+﻿using FishingLog.Mobile.Data.Entities;
 using SQLite;
 
 namespace FishingLog.Mobile.Data.Repositories;

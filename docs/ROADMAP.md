@@ -42,7 +42,7 @@
 - [x] **Mobile**: Base repository interface
 - [x] **Mobile**: Base entity with sync metadata (Id, ServerId, LastModifiedUtc, IsDirty, IsDeleted)
 - [x] **Mobile**: MauiProgram.cs with DI container
-- [ ] **Mobile**: ApiClient service abstraction
+- [x] **Mobile**: ApiClient service abstraction
 - [x] **Mobile**: Base ViewModel with INotifyPropertyChanged
 
 ---
@@ -72,7 +72,7 @@
   - UpdateAsync(trip, ct)
   - DeleteAsync(id, userId, ct)
 - [x] Register services in Program.cs DI container
-- [ ] Add basic validation (start time < end time, required fields)
+- [x] Add basic validation (start time < end time, required fields)
 
 ### 1.4 API: Endpoints (Minimal APIs)
 - [x] Create `FishingTripEndpoints.cs` class
@@ -81,14 +81,14 @@
   - `POST /api/fishing-trips` → Create trip (returns 201)
   - `PUT /api/fishing-trips/{id}` → Update trip
   - `DELETE /api/fishing-trips/{id}` → Delete trip (soft delete)
-- [ ] Map endpoints in Program.cs
-- [ ] Test with Postman/curl (manual verification)
+- [x] Map endpoints in Program.cs
+- [x] Test with Postman/curl (manual verification)
 
 ### 1.5 Contracts: DTOs
 - [x] Create `CreateFishingTripRequest` record in Contracts
 - [x] Create `UpdateFishingTripRequest` record in Contracts
 - [x] Create `FishingTripResponse` record in Contracts
-- [ ] Add FluentValidation validators (optional but recommended)
+- [x] Add FluentValidation validators (optional but recommended)
 
 ### 1.6 Mobile: Local Database Schema
 - [x] Create `FishingTripLocalEntity` class
@@ -97,7 +97,7 @@
 - [x] Create `SyncMetadata` table
   - Id, EntityType, LastSyncUtc
 - [x] Create database initialization code
-- [ ] Test local insert/update/delete
+- [x] Test local insert/update/delete
 
 ### 1.7 Mobile: Repository Layer
 - [x] Create `IFishingTripLocalRepository` interface
@@ -145,18 +145,28 @@
 - [x] Add navigation between pages
 
 ### 1.11 Testing & Validation
-- [ ] Unit tests for FishingTripService (Application layer)
-- [ ] Unit tests for FishingTripSyncService (mock API client, mock repository)
+- [x] Unit tests for FishingTripService (Application layer)
+- [x] Unit tests for CreateFishingTripRequestValidator (FluentValidation)
+- [ ] Unit tests for FishingTripSyncService (blocked — see Phase 4 refactor)
 - [ ] Integration test: Create trip on Mobile → Sync → Verify in API
 - [ ] Integration test: Create trip on API → Sync → Verify on Mobile
 - [ ] Manual test: Offline mode (airplane mode, create trips, go online, sync)
 - [ ] Manual test: Conflict resolution (edit same trip on two devices)
 
 ### 1.12 Documentation
-- [ ] Update README with "How to Run" instructions
-- [ ] Document sync algorithm in docs/SYNC_STRATEGY.md
-- [ ] Add API endpoint documentation (Swagger or similar)
+- [x] Update README with "How to Run" instructions and project status
+- [x] Document sync algorithm in docs/SYNC_STRATEGY.md
+- [x] Add API endpoint documentation (Swagger/OpenAPI)
 - [ ] Add troubleshooting guide
+
+---
+
+## Phase 1.x: Technical Improvements
+
+### 1.x SyncService Testability Refactor
+- [ ] Extract `FishingTripSyncService` from `FishingLog.Mobile` into a new `FishingLog.Sync` class library
+- [ ] Reference `FishingLog.Sync` from both `FishingLog.Mobile` and `FishingLog.Tests`
+- [ ] Add unit tests for `FishingTripSyncService` (mock `IFishingTripApiClient`, mock `IFishingTripLocalRepository`)
 
 ---
 

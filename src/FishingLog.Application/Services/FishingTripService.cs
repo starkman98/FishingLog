@@ -1,4 +1,5 @@
-﻿using FishingLog.Application.Interfaces;
+﻿using FishingLog.Application.Exceptions;
+using FishingLog.Application.Interfaces;
 using FishingLog.Contracts;
 using FishingLog.Domain.Entities;
 using FishingLog.Domain.Interfaces;
@@ -48,6 +49,9 @@ public class FishingTripService : IFishingTripService
     /// <inheritdoc/>
     public async Task<FishingTripResponse> CreateAsync(CreateFishingTripRequest request, CancellationToken ct = default)
     {
+        if (request.EndTime.HasValue && request.EndTime.Value <= request.StartTime)
+            throw new BusinessRuleException("EndTime must be after StartTime.");
+
         var trip = new FishingTrip
         {
             Id = Guid.NewGuid(),
@@ -57,8 +61,10 @@ public class FishingTripService : IFishingTripService
             WeatherDescription = request.WeatherDescription,
             Latitude = request.Latitude,
             Longitude = request.Longitude,
-            StartTime = request.StartTime,
-            EndTime = request.EndTime,
+            StartTime = DateTime.SpecifyKind(request.StartTime, DateTimeKind.Utc),
+            EndTime = request.EndTime.HasValue
+            ?   DateTime.SpecifyKind(request.EndTime.Value, DateTimeKind.Utc)
+                : null,
             Note = request.Note,
             CreatedAt = DateTime.UtcNow,
             LastModified = DateTime.UtcNow
@@ -71,6 +77,9 @@ public class FishingTripService : IFishingTripService
     /// <inheritdoc/>
     public async Task<FishingTripResponse?> UpdateAsync(Guid id, UpdateFishingTripRequest request, CancellationToken ct = default)
     {
+        if (request.EndTime.HasValue && request.EndTime.Value <= request.StartTime)
+            throw new BusinessRuleException("EndTime must be after StartTime.");
+
         var trip = await _repository.GetByIdAsync(id, ct);
         if (trip is null)
             return null;
@@ -81,8 +90,10 @@ public class FishingTripService : IFishingTripService
         trip.WeatherDescription = request.WeatherDescription;
         trip.Latitude = request.Latitude;
         trip.Longitude = request.Longitude;
-        trip.StartTime = request.StartTime;
-        trip.EndTime = request.EndTime;
+        trip.StartTime = DateTime.SpecifyKind(request.StartTime, DateTimeKind.Utc);
+        trip.EndTime = request.EndTime.HasValue
+            ? DateTime.SpecifyKind(request.EndTime.Value, DateTimeKind.Utc)
+            : null;
         trip.Note = request.Note;
         trip.LastModified = DateTime.UtcNow;
 

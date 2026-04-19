@@ -80,6 +80,7 @@ dotnet run
 The API will be available at:
 - HTTPS: `https://localhost:5001`
 - HTTP: `http://localhost:5000`
+- Swagger UI: `https://localhost:5001/swagger`
 
 ### 5. Run the Mobile App
 
@@ -234,19 +235,19 @@ dotnet ef database update
 
 See [docs/ROADMAP.md](docs/ROADMAP.md) for the detailed development roadmap.
 
-### Current Phase: Foundation & Project Setup ✅
+### Current Phase: Phase 1 MVP — Fishing Trips ✅
 
 - [x] Solution structure with layered architecture
 - [x] Docker Compose for PostgreSQL
-- [x] API configuration (appsettings)
-- [x] Mobile configuration (appsettings)
-- [x] Mobile configuration helper
-- [ ] Domain entities (FishingTrip)
-- [ ] EF Core DbContext and migrations
-- [ ] Repository pattern implementation
-- [ ] API endpoints (Minimal APIs)
-- [ ] Mobile local database (SQLite)
-- [ ] Sync service
+- [x] Domain entities (`FishingTrip`)
+- [x] EF Core DbContext and migrations
+- [x] Repository pattern (Infrastructure)
+- [x] API endpoints (Minimal APIs) with FluentValidation
+- [x] Swagger/OpenAPI documentation
+- [x] Mobile local database (SQLite)
+- [x] Offline-first sync service (dirty flags + cursor)
+- [x] MVVM UI (trip list, add/edit form)
+- [x] Unit tests (FishingTripService, validators)
 
 ### Upcoming Features
 
@@ -278,6 +279,7 @@ See [docs/ROADMAP.md](docs/ROADMAP.md) for the detailed development roadmap.
 ## 📚 Documentation
 
 - [ROADMAP.md](docs/ROADMAP.md) - Development roadmap and phase breakdown
+- [SYNC_STRATEGY.md](docs/SYNC_STRATEGY.md) - Offline sync algorithm and conflict resolution
 - [MOBILE_CONFIGURATION.md](docs/MOBILE_CONFIGURATION.md) - Mobile app configuration guide
 - [Copilot Instructions](.github/copilot-instructions.md) - Development principles and coding standards
 

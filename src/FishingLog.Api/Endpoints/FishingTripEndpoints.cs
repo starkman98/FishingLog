@@ -1,5 +1,7 @@
 ﻿using FishingLog.Application.Interfaces;
 using FishingLog.Contracts;
+using FluentValidation;
+using Microsoft.AspNetCore.Mvc;
 
 namespace FishingLog.Api.Endpoints;
 
@@ -15,11 +17,31 @@ public static class FishingTripEndpoints
         var group = app.MapGroup("/api/fishing-trips")
             .WithTags("FishingTrips");
 
-        group.MapGet("/", GetAllTrips);
-        group.MapGet("/{id:guid}", GetTripById);
-        group.MapPost("/", CreateTrip);
-        group.MapPut("/{id:guid}", UpdateTrip);
-        group.MapDelete("/{id:guid}", DeleteTrip);
+        group.MapGet("/", GetAllTrips)
+            .Produces<List<FishingTripResponse>>(StatusCodes.Status200OK)
+            .WithSummary("Get all fishing trips")
+            .WithDescription("Returns all trips. Pass ?modifiedSince=UTC timestamp to get only incremental changes (used by mobile sync).");
+
+        group.MapGet("/{id:guid}", GetTripById)
+            .Produces<FishingTripResponse>(StatusCodes.Status200OK)
+            .Produces(StatusCodes.Status404NotFound)
+            .WithSummary("Get a fishing trip by ID");
+
+        group.MapPost("/", CreateTrip)
+            .Produces<FishingTripResponse>(StatusCodes.Status201Created)
+            .Produces<ValidationProblemDetails>(StatusCodes.Status400BadRequest)
+            .WithSummary("Create a new fishing trip");
+
+        group.MapPut("/{id:guid}", UpdateTrip)
+            .Produces<FishingTripResponse>(StatusCodes.Status200OK)
+            .Produces<ValidationProblemDetails>(StatusCodes.Status400BadRequest)
+            .Produces(StatusCodes.Status404NotFound)
+            .WithSummary("Update an existing fishing trip");
+
+        group.MapDelete("/{id:guid}", DeleteTrip)
+            .Produces(StatusCodes.Status204NoContent)
+            .Produces(StatusCodes.Status404NotFound)
+            .WithSummary("Delete a fishing trip");
     }
 
     /// <summary>
@@ -53,22 +75,13 @@ public static class FishingTripEndpoints
     /// <summary>POST /api/fishing-trips → 201 Created</summary>
     private static async Task<IResult> CreateTrip(
         CreateFishingTripRequest request,
+        IValidator<CreateFishingTripRequest> validator,
         IFishingTripService service,
         CancellationToken ct)
     {
-        if (string.IsNullOrWhiteSpace(request.Name))
-            return Results.BadRequest(new { error = "Name is required." });
-
-        if (request.EndTime.HasValue && request.EndTime < request.StartTime)
-            return Results.BadRequest(new { error = "EndTime must be after StartTime." });
-
-        request = request with
-        {
-            StartTime = DateTime.SpecifyKind(request.StartTime, DateTimeKind.Utc),
-            EndTime = request.EndTime.HasValue
-                ? DateTime.SpecifyKind(request.EndTime.Value, DateTimeKind.Utc)
-                : null
-        };
+        var validation = await validator.ValidateAsync(request, ct);
+        if (!validation.IsValid)
+            return Results.ValidationProblem(validation.ToDictionary());
 
         var created = await service.CreateAsync(request, ct);
         return Results.Created($"/api/fishing-trips/{created.Id}", created);
@@ -78,22 +91,13 @@ public static class FishingTripEndpoints
     private static async Task<IResult> UpdateTrip(
         Guid id,
         UpdateFishingTripRequest request,
+        IValidator<UpdateFishingTripRequest> validator,
         IFishingTripService service,
         CancellationToken ct)
     {
-        if (string.IsNullOrWhiteSpace(request.Name))
-            return Results.BadRequest(new { error = "Name is required." });
-
-        if (request.EndTime.HasValue && request.EndTime < request.StartTime)
-            return Results.BadRequest(new { error = "EndTime must be after StartTime." });
-
-        request = request with
-        {
-            StartTime = DateTime.SpecifyKind(request.StartTime, DateTimeKind.Utc),
-            EndTime = request.EndTime.HasValue
-                ? DateTime.SpecifyKind(request.EndTime.Value, DateTimeKind.Utc)
-                : null
-        };
+        var validation = await validator.ValidateAsync(request, ct);
+        if (!validation.IsValid)
+            return Results.ValidationProblem(validation.ToDictionary());
 
         var updated = await service.UpdateAsync(id, request, ct);
         return updated is null ? Results.NotFound() : Results.Ok(updated);

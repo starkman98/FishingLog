@@ -29,134 +29,144 @@
 - [x] .gitignore properly configured
 
 ### Core Infrastructure (API)
-- [ ] **Domain**: `FishingTrip` entity with properties (Id, UserId, StartTime, EndTime, Location, Notes, etc.)
-- [ ] **Infrastructure**: DbContext setup for PostgreSQL
-- [ ] **Infrastructure**: Initial EF Core migration
-- [ ] **API**: Program.cs with DI container configuration
-- [ ] **API**: CORS configuration (locked down)
-- [ ] **API**: Health check endpoint (`/health`)
-- [ ] **API**: Global exception handling middleware
+- [x] **Domain**: `FishingTrip` entity with properties (Id, UserId, StartTime, EndTime, Location, Notes, etc.)
+- [x] **Infrastructure**: DbContext setup for PostgreSQL
+- [x] **Infrastructure**: Initial EF Core migration
+- [x] **API**: Program.cs with DI container configuration
+- [x] **API**: CORS configuration (locked down)
+- [x] **API**: Health check endpoint (`/health`)
+- [x] **API**: Global exception handling middleware
 
 ### Core Infrastructure (Mobile)
-- [ ] **Mobile**: SQLite database initialization
-- [ ] **Mobile**: Base repository interface
-- [ ] **Mobile**: Base entity with sync metadata (Id, ServerId, LastModifiedUtc, IsDirty, IsDeleted)
-- [ ] **Mobile**: MauiProgram.cs with DI container
-- [ ] **Mobile**: ApiClient service abstraction
-- [ ] **Mobile**: Base ViewModel with INotifyPropertyChanged
+- [x] **Mobile**: SQLite database initialization
+- [x] **Mobile**: Base repository interface
+- [x] **Mobile**: Base entity with sync metadata (Id, ServerId, LastModifiedUtc, IsDirty, IsDeleted)
+- [x] **Mobile**: MauiProgram.cs with DI container
+- [x] **Mobile**: ApiClient service abstraction
+- [x] **Mobile**: Base ViewModel with INotifyPropertyChanged
 
 ---
 
 ## Phase 1: MVP — Fishing Trips (Local + Sync)
 
 ### 1.1 Domain Layer: Fishing Trip Entity
-- [ ] Create `FishingTrip` domain entity
+- [x] Create `FishingTrip` domain entity
   - Id (Guid), UserId (Guid), StartTime, EndTime, Location, WaterType, Notes, CreatedUtc, LastModifiedUtc
-- [ ] Create `IFishingTripRepository` interface in Domain
-- [ ] Create `IFishingTripService` interface in Application
-- [ ] Add XML summary comments to all public members
+- [x] Create `IFishingTripRepository` interface in Domain
+- [x] Create `IFishingTripService` interface in Application
+- [x] Add XML summary comments to all public members
 
 ### 1.2 API: Database & Migrations
-- [ ] Create `FishingTripRepository` in Infrastructure
+- [x] Create `FishingTripRepository` in Infrastructure
   - Implement CRUD operations using EF Core
   - All methods async with CancellationToken
-- [ ] Create EF Core migration for FishingTrip table
-- [ ] Apply migration to local PostgreSQL
+- [x] Create EF Core migration for FishingTrip table
+- [x] Apply migration to local PostgreSQL
 - [ ] Seed test data (optional, development only)
 
 ### 1.3 API: Business Logic
-- [ ] Create `FishingTripService` in Application
+- [x] Create `FishingTripService` in Application
   - GetAllAsync(userId, ct)
   - GetByIdAsync(id, userId, ct)
   - CreateAsync(trip, ct)
   - UpdateAsync(trip, ct)
   - DeleteAsync(id, userId, ct)
-- [ ] Register services in Program.cs DI container
-- [ ] Add basic validation (start time < end time, required fields)
+- [x] Register services in Program.cs DI container
+- [x] Add basic validation (start time < end time, required fields)
 
 ### 1.4 API: Endpoints (Minimal APIs)
-- [ ] Create `FishingTripEndpoints.cs` class
+- [x] Create `FishingTripEndpoints.cs` class
   - `GET /api/fishing-trips` → Get all trips for user
   - `GET /api/fishing-trips/{id}` → Get single trip
   - `POST /api/fishing-trips` → Create trip (returns 201)
   - `PUT /api/fishing-trips/{id}` → Update trip
   - `DELETE /api/fishing-trips/{id}` → Delete trip (soft delete)
-- [ ] Map endpoints in Program.cs
-- [ ] Test with Postman/curl (manual verification)
+- [x] Map endpoints in Program.cs
+- [x] Test with Postman/curl (manual verification)
 
 ### 1.5 Contracts: DTOs
-- [ ] Create `CreateFishingTripRequest` record in Contracts
-- [ ] Create `UpdateFishingTripRequest` record in Contracts
-- [ ] Create `FishingTripResponse` record in Contracts
-- [ ] Add FluentValidation validators (optional but recommended)
+- [x] Create `CreateFishingTripRequest` record in Contracts
+- [x] Create `UpdateFishingTripRequest` record in Contracts
+- [x] Create `FishingTripResponse` record in Contracts
+- [x] Add FluentValidation validators (optional but recommended)
 
 ### 1.6 Mobile: Local Database Schema
-- [ ] Create `FishingTripLocalEntity` class
+- [x] Create `FishingTripLocalEntity` class
   - Id (int, local PK), ServerId (Guid?), StartTime, EndTime, Location, Notes
   - LastModifiedUtc, IsDirty (bool), IsDeleted (bool)
-- [ ] Create `SyncMetadata` table
+- [x] Create `SyncMetadata` table
   - Id, EntityType, LastSyncUtc
-- [ ] Create database initialization code
-- [ ] Test local insert/update/delete
+- [x] Create database initialization code
+- [x] Test local insert/update/delete
 
 ### 1.7 Mobile: Repository Layer
-- [ ] Create `IFishingTripLocalRepository` interface
+- [x] Create `IFishingTripLocalRepository` interface
   - GetAllAsync(), GetByIdAsync(id), GetDirtyAsync()
   - AddAsync(trip), UpdateAsync(trip), DeleteAsync(id)
   - MarkAsSyncedAsync(id, serverId, timestamp)
-- [ ] Create `FishingTripLocalRepository` implementation using sqlite-net-pcl
-- [ ] Register in MauiProgram.cs
+- [x] Create `FishingTripLocalRepository` implementation using sqlite-net-pcl
+- [x] Register in MauiProgram.cs
 
 ### 1.8 Mobile: API Client
-- [ ] Create `IFishingTripApiClient` interface
+- [x] Create `IFishingTripApiClient` interface
   - GetAllAsync(ct), GetByIdAsync(id, ct)
   - CreateAsync(request, ct), UpdateAsync(id, request, ct), DeleteAsync(id, ct)
-- [ ] Create `FishingTripApiClient` implementation using HttpClient
-- [ ] Handle HTTP errors gracefully (404, 409, 500)
-- [ ] Register as singleton in MauiProgram.cs
+- [x] Create `FishingTripApiClient` implementation using HttpClient
+- [x] Handle HTTP errors gracefully (404, 409, 500)
+- [x] Register as singleton in MauiProgram.cs
 
 ### 1.9 Mobile: Sync Service (Core)
-- [ ] Create `IFishingTripSyncService` interface
+- [x] Create `IFishingTripSyncService` interface
   - SyncAsync(ct)
-- [ ] Create `FishingTripSyncService` implementation
+- [x] Create `FishingTripSyncService` implementation
   - **Step 1**: Get all dirty local trips
   - **Step 2**: Upload each dirty trip to API (create or update based on ServerId)
   - **Step 3**: Download trips modified since LastSyncUtc from API
   - **Step 4**: Upsert remote trips into local DB (transaction)
   - **Step 5**: Update LastSyncUtc in SyncMetadata
   - **Step 6**: Mark uploaded trips as clean (IsDirty = false)
-- [ ] Add conflict resolution (last-write-wins for MVP)
-- [ ] Add error handling and retry logic
-- [ ] Register in MauiProgram.cs
+- [x] Add conflict resolution (last-write-wins for MVP)
+- [x] Add error handling and retry logic
+- [x] Register in MauiProgram.cs
 
 ### 1.10 Mobile: ViewModel & UI
-- [ ] Create `FishingTripsViewModel`
+- [x] Create `FishingTripsViewModel`
   - ObservableCollection<FishingTripLocalEntity> Trips
   - LoadTripsCommand, AddTripCommand, EditTripCommand, DeleteTripCommand, SyncCommand
   - Inject IFishingTripLocalRepository and IFishingTripSyncService
-- [ ] Create `FishingTripsPage.xaml` with list view
+- [x] Create `FishingTripsPage.xaml` with list view
   - Display all trips with start time, location, notes
   - Pull-to-refresh triggers sync
   - Tap to edit
-- [ ] Create `AddEditFishingTripPage.xaml` with form
+- [x] Create `AddEditFishingTripPage.xaml` with form
   - Date/time pickers, location entry, notes field
   - Save button (saves locally, sets IsDirty = true)
-- [ ] Register pages and ViewModels in MauiProgram.cs
-- [ ] Add navigation between pages
+- [x] Register pages and ViewModels in MauiProgram.cs
+- [x] Add navigation between pages
 
 ### 1.11 Testing & Validation
-- [ ] Unit tests for FishingTripService (Application layer)
-- [ ] Unit tests for FishingTripSyncService (mock API client, mock repository)
+- [x] Unit tests for FishingTripService (Application layer)
+- [x] Unit tests for CreateFishingTripRequestValidator (FluentValidation)
+- [ ] Unit tests for FishingTripSyncService (blocked — see Phase 4 refactor)
 - [ ] Integration test: Create trip on Mobile → Sync → Verify in API
 - [ ] Integration test: Create trip on API → Sync → Verify on Mobile
 - [ ] Manual test: Offline mode (airplane mode, create trips, go online, sync)
 - [ ] Manual test: Conflict resolution (edit same trip on two devices)
 
 ### 1.12 Documentation
-- [ ] Update README with "How to Run" instructions
-- [ ] Document sync algorithm in docs/SYNC_STRATEGY.md
-- [ ] Add API endpoint documentation (Swagger or similar)
+- [x] Update README with "How to Run" instructions and project status
+- [x] Document sync algorithm in docs/SYNC_STRATEGY.md
+- [x] Add API endpoint documentation (Swagger/OpenAPI)
 - [ ] Add troubleshooting guide
+
+---
+
+## Phase 1.x: Technical Improvements
+
+### 1.x SyncService Testability Refactor
+- [ ] Extract `FishingTripSyncService` from `FishingLog.Mobile` into a new `FishingLog.Sync` class library
+- [ ] Reference `FishingLog.Sync` from both `FishingLog.Mobile` and `FishingLog.Tests`
+- [ ] Add unit tests for `FishingTripSyncService` (mock `IFishingTripApiClient`, mock `IFishingTripLocalRepository`)
 
 ---
 

@@ -81,7 +81,7 @@ public class ApiSettings
     /// <summary>
     /// HTTP request timeout in seconds
     /// </summary>
-    public int Timeout { get; set; } = 30;
+    public int Timeout { get; set; } = 8;
 }
 
 /// <summary>

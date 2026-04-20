@@ -7,4 +7,7 @@
     <Project Path="src/FishingLog.Infrastructure/FishingLog.Infrastructure.csproj" />
     <Project Path="src/FishingLog.Mobile/FishingLog.Mobile.csproj" />
   </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/FishingLog.Tests/FishingLog.Tests.csproj" />
+  </Folder>
 </Solution>

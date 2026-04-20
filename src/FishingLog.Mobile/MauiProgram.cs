@@ -1,4 +1,9 @@
 ﻿using FishingLog.Mobile.Configuration;
+using FishingLog.Mobile.Data;
+using FishingLog.Mobile.Data.Repositories;
+using FishingLog.Mobile.Pages;
+using FishingLog.Mobile.Services;
+using FishingLog.Mobile.ViewModels;
 using Microsoft.Extensions.Logging;
 
 namespace FishingLog.Mobile;
@@ -27,6 +32,36 @@ public static class MauiProgram
 		builder.Services.AddSingleton(appSettings.Sync);
 		builder.Services.AddSingleton(appSettings.Database);
 
-		return builder.Build();
+        // --- Local database ---
+        // Singleton: one connection shared for the entire app lifetime
+        builder.Services.AddSingleton<ILocalDatabase, LocalDatabase>();
+
+        // --- Local repositories ---
+        // Transient: cheap to create, no state of their own
+        builder.Services.AddTransient<IFishingTripLocalRepository, FishingTripLocalRepository>();
+		builder.Services.AddTransient<ISyncMetadataRepository, SyncMetadataRepository>();
+
+        // --- API client ---
+        // Typed HttpClient: BaseAddress and Timeout come from appsettings
+		builder.Services.AddHttpClient<IFishingTripApiClient, FishingTripApiClient>(client =>
+		{
+			var baseUrl = PlatformApiUrl.Resolve(appSettings.Api.BaseUrl);
+			client.BaseAddress = new Uri(baseUrl.TrimEnd('/') + "/");
+			client.Timeout = TimeSpan.FromSeconds(appSettings.Api.Timeout);
+		});
+
+        // --- Sync service ---
+        builder.Services.AddTransient<IFishingTripSyncService, FishingTripSyncService>();
+
+        // --- ViewModels ---
+        builder.Services.AddTransient<FishingTripsViewModel>();
+        builder.Services.AddTransient<AddEditFishingTripViewModel>();
+
+        // --- Pages ---
+        builder.Services.AddTransient<FishingTripsPage>();
+        builder.Services.AddTransient<AddEditFishingTripPage>();
+
+
+        return builder.Build();
 	}
 }

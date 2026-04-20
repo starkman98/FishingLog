@@ -236,6 +236,43 @@ public interface IFishingTripRepository
 }
 ```
 
+### DateTime Handling
+
+- **Always store DateTime as UTC** — SQLite entities, PostgreSQL columns, and API DTOs must use UTC.
+- **Convert at the ViewModel boundary only** — convert UTC → local when loading into date/time pickers using `.ToLocalTime()`, and convert local → UTC when saving using `DateTime.SpecifyKind(..., DateTimeKind.Local).ToUniversalTime()`.
+- Use this helper pattern in ViewModels:
+
+```csharp
+// Loading from entity into pickers
+var local = entity.StartTime.ToLocalTime();
+StartDate      = local.Date;
+StartTimeOfDay = local.TimeOfDay;
+
+// Saving from pickers back to entity
+private static DateTime ToUtc(DateTime localDate, TimeSpan localTime)
+    => DateTime.SpecifyKind(localDate.Date + localTime, DateTimeKind.Local).ToUniversalTime();
+```
+
+---
+
+### ObservableProperty (CommunityToolkit.Mvvm)
+
+- **Always use partial property syntax** — field-based `[ObservableProperty] private T _field;` is deprecated and not AOT-safe
+- Requires `<LangVersion>preview</LangVersion>` in `FishingLog.Mobile.csproj`
+
+```csharp
+// Correct — partial property syntax
+[ObservableProperty]
+public partial string Name { get; set; } = string.Empty;
+
+[ObservableProperty]
+[NotifyPropertyChangedFor(nameof(IsEndDateVisible))]
+public partial bool HasEndDate { get; set; }
+
+// Wrong — do not use
+[ObservableProperty] private string _name = string.Empty;
+```
+
 ---
 
 ## Questions to Ask

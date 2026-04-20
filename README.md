@@ -2,6 +2,29 @@
 
 A cross-platform fishing log application built with .NET MAUI (mobile) and ASP.NET Core (API). Track your fishing trips, catches, and sync data across devices with offline-first architecture.
 
+## 🚧 Status
+
+> ⚠️ **Active development (early-stage / MVP in progress)**  
+> This project is currently under active development.  
+> Features, structure, and APIs may change frequently.
+
+---
+
+## 🧠 Tech Stack
+
+### Backend
+- ASP.NET Core Web API
+- Entity Framework Core
+- PostgreSQL (Docker)
+
+### Frontend (Mobile)
+- .NET MAUI
+
+### Testing
+- xUnit
+
+---
+
 ## 🏗️ Architecture
 
 - **Offline-first mobile app**: Local SQLite database with explicit sync
@@ -20,9 +43,16 @@ FishingLog/
 │   ├── FishingLog.Domain/           # Domain entities and interfaces
 │   ├── FishingLog.Infrastructure/   # Data access (EF Core, repositories)
 │   └── FishingLog.Mobile/           # .NET MAUI mobile app
+├── tests/
+│   └── FishingLog.Tests/            # xUnit unit tests (services, validators)
 ├── docs/
 │   ├── ROADMAP.md                   # Development roadmap
-│   └── MOBILE_CONFIGURATION.md      # Mobile app configuration guide
+│   ├── MOBILE_ARCHITECTURE.md       # Mobile architecture overview
+│   ├── MOBILE_CONFIGURATION.md      # Mobile app configuration guide
+│   ├── SYNC_STRATEGY.md             # Offline sync algorithm details
+│   ├── QUICK_START.md               # Quick start guide
+│   ├── SETUP_CHECKLIST.md           # Setup checklist
+│   └── SETUP_SUMMARY.md             # Setup summary
 ├── docker-compose.yml               # PostgreSQL local development
 └── FishingLog.sln
 ```
@@ -280,7 +310,11 @@ See [docs/ROADMAP.md](docs/ROADMAP.md) for the detailed development roadmap.
 
 - [ROADMAP.md](docs/ROADMAP.md) - Development roadmap and phase breakdown
 - [SYNC_STRATEGY.md](docs/SYNC_STRATEGY.md) - Offline sync algorithm and conflict resolution
+- [MOBILE_ARCHITECTURE.md](docs/MOBILE_ARCHITECTURE.md) - Mobile architecture overview
 - [MOBILE_CONFIGURATION.md](docs/MOBILE_CONFIGURATION.md) - Mobile app configuration guide
+- [QUICK_START.md](docs/QUICK_START.md) - Quick start guide
+- [SETUP_CHECKLIST.md](docs/SETUP_CHECKLIST.md) - Setup checklist
+- [SETUP_SUMMARY.md](docs/SETUP_SUMMARY.md) - Setup summary
 - [Copilot Instructions](.github/copilot-instructions.md) - Development principles and coding standards
 
 ## 🤝 Contributing
